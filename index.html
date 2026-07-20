@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="es-CL">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#070708" />
+    <meta name="description" content="FUGA — recupera el control de tus gastos recurrentes." />
+    <title>FUGA — gastos recurrentes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/variables.css" />
+    <link rel="stylesheet" href="css/animations.css" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="ambient" aria-hidden="true"><i></i><i></i><i></i></div>
+    <canvas id="particles" aria-hidden="true"></canvas>
+    <div class="noise" aria-hidden="true"></div>
+
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#home" aria-label="FUGA, inicio">FUGA<span>.</span></a>
+        <button class="icon-button" id="settingsButton" aria-label="Abrir ajustes">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4m0-12.8L17 7M7 17l-1.4 1.4"/><circle cx="12" cy="12" r="3.2"/></svg>
+        </button>
+      </header>
+
+      <main id="mainContent">
+        <section class="view active" id="homeView" data-view="home">
+          <section class="hero" aria-labelledby="heroTitle">
+            <p class="eyebrow"><span class="status-dot"></span> DINERO EN MOVIMIENTO</p>
+            <h1 id="heroTitle">Se te escapan</h1>
+            <p class="hero-amount" id="monthlyTotal">$0</p>
+            <p class="hero-subtitle">cada mes, sin pedir permiso.</p>
+            <div class="hero-meta">
+              <span>Proyección anual</span>
+              <strong id="annualTotal">$0</strong>
+              <span class="active-counter" id="activeCount">0 fugas activas</span>
+            </div>
+            <button class="primary-button" id="reviewButton">VER DÓNDE SE VA <span>→</span></button>
+          </section>
+
+          <section class="flow-section" aria-labelledby="flowTitle">
+            <div class="section-heading"><div><p class="eyebrow">FLUJO VIVO</p><h2 id="flowTitle">El dinero no espera.</h2></div><span id="flowLabel">$0 / MES</span></div>
+            <div class="flow-card"><canvas id="flowCanvas" aria-label="Visualización animada de gastos"></canvas><div class="flow-caption"><span>más grande = más dinero</span><span>→</span><span>sale de tu cuenta</span></div></div>
+          </section>
+
+          <section class="insight-section" id="insightsSection" aria-live="polite"></section>
+
+          <section class="leaks-section" aria-labelledby="leaksTitle">
+            <div class="section-heading"><div><p class="eyebrow">PRIORIDAD</p><h2 id="leaksTitle">Tus fugas mayores</h2></div><button class="text-button" data-go="leaks">Ver todas</button></div>
+            <div class="leak-list" id="topLeaks"></div>
+          </section>
+        </section>
+
+        <section class="view" id="leaksView" data-view="leaks">
+          <div class="page-heading"><p class="eyebrow">INVENTARIO</p><h1>Todas tus fugas</h1><p>Desliza una tarjeta para pausarla o eliminarla.</p></div>
+          <label class="search"><span>⌕</span><input id="searchInput" type="search" placeholder="Buscar una fuga" autocomplete="off" /></label>
+          <div class="leak-list all-leaks" id="allLeaks"></div>
+        </section>
+
+        <section class="view" id="settingsView" data-view="settings">
+          <div class="page-heading"><p class="eyebrow">SISTEMA</p><h1>Ajustes</h1><p>Tu información vive en este dispositivo.</p></div>
+          <div class="settings-stack">
+            <label class="field-label" for="exchangeRate">Dólar en pesos</label>
+            <input class="input" id="exchangeRate" type="number" min="1" inputmode="decimal" />
+            <div class="setting-row"><div><strong>Exportar respaldo</strong><span>Un archivo JSON con tus datos.</span></div><button class="mini-button" id="exportButton">GUARDAR</button></div>
+            <label class="setting-row import-row"><div><strong>Restaurar respaldo</strong><span>Reemplaza lo que tienes ahora.</span></div><span class="mini-button">ELEGIR</span><input id="importInput" type="file" accept="application/json" /></label>
+            <button class="danger-button" id="clearButton">BORRAR TODAS LAS FUGAS</button>
+          </div>
+        </section>
+      </main>
+
+      <nav class="dock" aria-label="Navegación principal">
+        <button class="nav-button active" data-go="home" aria-label="Inicio"><svg viewBox="0 0 24 24"><path d="m4 10 8-6 8 6v9a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z"/></svg><span>Inicio</span></button>
+        <button class="add-button" id="addButton" aria-label="Agregar fuga"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+        <button class="nav-button" data-go="leaks" aria-label="Fugas"><svg viewBox="0 0 24 24"><path d="M12 3c3.7 3.9 6.5 7.1 6.5 10.7a6.5 6.5 0 1 1-13 0C5.5 10.1 8.3 6.9 12 3Z"/></svg><span>Fugas</span></button>
+      </nav>
+    </div>
+
+    <div class="modal-backdrop" id="modalBackdrop" hidden></div>
+    <section class="sheet" id="leakSheet" aria-modal="true" role="dialog" aria-labelledby="sheetTitle" hidden>
+      <div class="sheet-handle"></div>
+      <header class="sheet-header"><div><p class="eyebrow">NUEVO REGISTRO</p><h2 id="sheetTitle">Nueva fuga</h2></div><button class="icon-button" id="closeSheet" aria-label="Cerrar">×</button></header>
+      <form id="leakForm" class="leak-form">
+        <input type="hidden" id="leakId" />
+        <label>Nombre<input class="input" id="nameInput" required maxlength="50" placeholder="Netflix" /></label>
+        <div class="form-grid"><label>Monto<input class="input" id="amountInput" required type="number" min="1" inputmode="decimal" placeholder="9990" /></label><label>Moneda<select class="input" id="currencyInput"><option value="CLP">CLP</option><option value="USD">USD</option></select></label></div>
+        <div class="form-grid"><label>Frecuencia<select class="input" id="frequencyInput"><option value="monthly">Mensual</option><option value="quarterly">Trimestral</option><option value="semiannual">Semestral</option><option value="yearly">Anual</option></select></label><label>Próximo cobro<input class="input" id="nextChargeInput" required type="date" /></label></div>
+        <label>Color<select class="input" id="colorInput"><option value="#ff477e">Magenta</option><option value="#c9ff3f">Volt</option><option value="#7d8cff">Índigo</option><option value="#ffad45">Ámbar</option><option value="#50dfb5">Menta</option></select></label>
+        <button class="primary-button form-submit" type="submit">GUARDAR FUGA <span>→</span></button>
+        <button class="danger-button" type="button" id="deleteButton" hidden>ELIMINAR FUGA</button>
+      </form>
+    </section>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/particles.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
