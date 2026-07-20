@@ -1,6 +1,6 @@
 /* FUGA · service worker
    Sube CACHE a v2, v3... cada vez que publiques cambios. */
-const CACHE = "fuga-v3";
+const CACHE = "fuga-v4";
 const ASSETS = ["./", "./index.html", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
