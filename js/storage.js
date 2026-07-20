@@ -1,1 +1,0 @@
-window.FugaStorage=(()=>{const KEY="fuga-v2";const defaults={rate:950,leaks:[]};function load(){try{return {...defaults,...JSON.parse(localStorage.getItem(KEY)||"{}")} }catch{return {...defaults}}}function save(data){localStorage.setItem(KEY,JSON.stringify(data))}return{load,save}})();
