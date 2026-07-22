@@ -416,6 +416,25 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(70%) sepia(10%
   transition:transform .16s var(--eio),border-color .2s}
 .sws button.on{border-color:#fff;transform:scale(1.06)}
 
+/* ══ Bienvenida ══ */
+.welcome{position:fixed;z-index:20;inset:0;display:grid;place-items:center;padding:30px 24px;
+  background:linear-gradient(180deg,rgba(11,15,20,.92),rgba(11,15,20,.99));
+  backdrop-filter:saturate(1.4) blur(32px);-webkit-backdrop-filter:saturate(1.4) blur(32px);
+  animation:fadeIn .45s var(--e)}
+.welcome[hidden]{display:none}
+.w-in{width:100%;max-width:380px;text-align:center;animation:rise .6s var(--e) .08s both}
+.w-mark{width:82px;height:82px;margin:0 auto 26px;border-radius:27px;display:grid;place-items:center;
+  border:1px solid var(--edge-hi);background:linear-gradient(150deg,var(--pri),var(--sec));
+  box-shadow:0 18px 44px rgba(79,124,255,.4),0 1px 0 rgba(255,255,255,.24) inset}
+.w-mark svg{width:38px;height:38px;fill:none;stroke:#fff;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.w-in h1{margin:0;font-size:29px;font-weight:700;letter-spacing:-.04em}
+.w-in p{margin:11px 0 30px;color:var(--tx2);font-size:14.5px;line-height:1.55}
+.w-in label{text-align:left}
+.w-in .save{width:100%}
+.w-skip{display:block;width:100%;margin-top:14px;padding:12px;color:var(--tx3);font-size:13px}
+.w-skip:active{color:var(--tx2)}
+.w-note{margin:22px 0 0;color:var(--tx3);font-size:11.5px;line-height:1.5}
+
 /* ══ Varios ══ */
 .toast{display:none;position:fixed;z-index:11;left:50%;bottom:calc(100px + var(--sb));
   max-width:calc(100vw - 44px);padding:13px 18px;border-radius:15px;border:1px solid var(--edge-hi);
@@ -442,9 +461,9 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(70%) sepia(10%
   <div class="top">
     <div class="hi">
       <small id="greet">Hola</small>
-      <h1 id="uname">Marco 👋</h1>
+      <h1 id="uname">👋</h1>
     </div>
-    <button class="av" id="avatarBtn">M</button>
+    <button class="av" id="avatarBtn"></button>
   </div>
 
   <!-- ═══ INICIO ═══ -->
@@ -523,8 +542,8 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(70%) sepia(10%
   <!-- ═══ PERFIL ═══ -->
   <div class="view" id="v-profile" hidden>
     <div class="prof">
-      <div class="big-av" id="profAv">M</div>
-      <h2 id="profName">Marco</h2>
+      <div class="big-av" id="profAv"></div>
+      <h2 id="profName">—</h2>
       <span class="lvl"><i></i><span id="profLvl">Nivel inicial</span></span>
     </div>
     <div class="tiles" id="profTiles"></div>
@@ -638,6 +657,20 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(70%) sepia(10%
     <label>COLOR<div class="sws" id="sws"></div></label>
     <button class="save" type="submit">Guardar suscripción</button>
   </form>
+</section>
+
+<section class="welcome" id="welcome" hidden aria-modal="true" role="dialog">
+  <div class="w-in">
+    <div class="w-mark">
+      <svg viewBox="0 0 24 24"><path d="M12 3.2c3.4 3.6 6 6.6 6 9.9a6 6 0 0 1-12 0c0-3.3 2.6-6.3 6-9.9z"/></svg>
+    </div>
+    <h1 id="wTitle">Bienvenido a FUGA</h1>
+    <p id="wSub">Controla todas tus suscripciones desde un solo lugar. Empecemos por tu nombre.</p>
+    <label>¿CÓMO TE LLAMAS?<input id="wName" maxlength="20" placeholder="Tu nombre" autocomplete="given-name"></label>
+    <button class="save" id="wGo">Empezar</button>
+    <button class="w-skip" id="wSkip">Prefiero no decirlo</button>
+    <p class="w-note" id="wNote">Se guarda solo en este dispositivo. Nadie más lo ve.</p>
+  </div>
 </section>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -784,9 +817,10 @@ function load(){
   try{ raw = JSON.parse(localStorage.getItem(KEY) || "{}"); }catch{ raw = {}; }
   return {
     rate: Number(raw.rate) > 0 ? Number(raw.rate) : 950,
-    user: typeof raw.user === "string" && raw.user ? raw.user : "Marco",
+    user: typeof raw.user === "string" ? raw.user : "",
     brandLogos: raw.brandLogos !== false,
     since: raw.since || new Date().toISOString().slice(0,10),
+    seen: Boolean(raw.seen),
     saved: Number(raw.saved) || 0,
     leaks: Array.isArray(raw.leaks) ? raw.leaks.map(norm) : []
   };
@@ -861,9 +895,13 @@ function renderHome(){
   const prev = new Date(now.getFullYear(), now.getMonth()-1, 1);
   const prevCash = monthCash(prev.getFullYear(), prev.getMonth());
 
-  $("greet").textContent = now.getHours() < 12 ? "Buenos días" : now.getHours() < 20 ? "Buenas tardes" : "Buenas noches";
-  $("uname").textContent = state.user + " 👋";
-  $("avatarBtn").textContent = state.user.slice(0,1).toUpperCase();
+  const hora = new Date().getHours();
+  const saludo = hora < 12 ? "Buenos días" : hora < 20 ? "Buenas tardes" : "Buenas noches";
+  $("greet").textContent = state.user ? saludo : "Te damos la bienvenida";
+  $("uname").textContent = state.user ? state.user + " 👋" : "Hola 👋";
+  $("avatarBtn").innerHTML = state.user
+    ? esc(state.user.slice(0,1).toUpperCase())
+    : '<svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="8" r="3.4"/><path d="M5.4 20.5c.8-3.5 3.2-5.2 6.6-5.2s5.8 1.7 6.6 5.2"/></svg>';
   $("hMonth").textContent = money(cash);
 
   let cls = "flat", ic = ICON.eq, txt = "igual que el mes pasado";
@@ -1153,8 +1191,10 @@ function renderAdvice(){
 
 /* ═════════ PERFIL ═════════ */
 function renderProfile(){
-  $("profAv").textContent = state.user.slice(0,1).toUpperCase();
-  $("profName").textContent = state.user;
+  $("profAv").innerHTML = state.user
+    ? esc(state.user.slice(0,1).toUpperCase())
+    : '<svg viewBox="0 0 24 24" style="width:38px;height:38px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="8" r="3.4"/><path d="M5.4 20.5c.8-3.5 3.2-5.2 6.6-5.2s5.8 1.7 6.6 5.2"/></svg>';
+  $("profName").textContent = state.user || "Sin nombre";
   const meses = Math.max(1, Math.round((today() - new Date(state.since + "T00:00:00")) / 2592000000) + 1);
   const ahorro = state.saved;
   const nivel = ahorro > 200000 ? "Nivel experto" : ahorro > 60000 ? "Nivel avanzado" : ahorro > 0 ? "Nivel en marcha" : "Nivel inicial";
@@ -1438,6 +1478,32 @@ function exportCSV(){
   toast("Planilla descargada");
 }
 
+/* ═════════ Bienvenida ═════════ */
+function showWelcome(editando){
+  $("wTitle").textContent = editando ? "Cambiar nombre" : "Bienvenido a FUGA";
+  $("wSub").textContent = editando
+    ? "Así te saluda la app cada vez que la abres."
+    : "Controla todas tus suscripciones desde un solo lugar. Empecemos por tu nombre.";
+  $("wGo").textContent  = editando ? "Guardar" : "Empezar";
+  $("wSkip").hidden = !!editando;
+  $("wNote").hidden = !!editando;
+  $("wName").value = state.user || "";
+  $("welcome").hidden = false;
+  document.body.style.overflow = "hidden";
+  setTimeout(() => $("wName").focus(), 120);
+}
+function hideWelcome(){
+  $("welcome").hidden = true;
+  document.body.style.overflow = "";
+  render();
+}
+function saveName(){
+  const n = $("wName").value.trim().slice(0,20);
+  if(!n){ toast("Escribe tu nombre o toca omitir"); $("wName").focus(); return; }
+  state.user = n; state.seen = true; persist(); hideWelcome();
+  toast("Listo, " + n);
+}
+
 /* ═════════ Eventos ═════════ */
 function ripple(btn, e){
   const r = btn.getBoundingClientRect();
@@ -1520,10 +1586,13 @@ function bind(){
     swatches(p.c); renderPick();
   });
 
-  $("editName").addEventListener("click", () => {
-    const n = prompt("¿Cómo te llamas?", state.user);
-    if(n && n.trim()){ state.user = n.trim().slice(0,20); persist(); render(); toast("Listo, " + state.user); }
+  $("editName").addEventListener("click", () => showWelcome(true));
+  $("wGo").addEventListener("click", saveName);
+  $("wSkip").addEventListener("click", () => {
+    state.seen = true; persist(); hideWelcome();
+    toast("Puedes ponerlo cuando quieras en Perfil");
   });
+  $("wName").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); saveName(); } });
   $("rate").addEventListener("change", () => {
     const v = Number($("rate").value);
     if(!(v > 0)){ $("rate").value = state.rate; toast("Valor inválido"); return; }
@@ -1547,9 +1616,10 @@ function bind(){
         if(!Array.isArray(d.leaks)) throw 0;
         state = {
           rate: Number(d.rate) > 0 ? Number(d.rate) : 950,
-          user: d.user || "Marco",
+          user: typeof d.user === "string" ? d.user : "",
           brandLogos: d.brandLogos !== false,
           since: d.since || iso(today()),
+          seen: true,
           saved: Number(d.saved) || 0,
           leaks: d.leaks.map(norm)
         };
@@ -1579,6 +1649,7 @@ function bind(){
 
 bind();
 go("home");
+if(!state.user && !state.seen) showWelcome(false);
 })();
 </script>
 </body>

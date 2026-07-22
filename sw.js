@@ -1,5 +1,5 @@
 /* FUGA · service worker — sube CACHE en cada publicación */
-const CACHE = "fuga-v5";
+const CACHE = "fuga-v6";
 const ASSETS = ["./","./index.html","./icon-180.png","./icon-192.png","./icon-512.png","./manifest.json"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
